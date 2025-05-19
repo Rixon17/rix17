@@ -1,0 +1,44 @@
+name: Search Repositories
+
+on:
+  workflow_dispatch:
+    inputs:
+      org_name:
+        description: 'Organization name to search'
+        required: true
+        type: string
+      search_string:
+        description: 'String to search for in repositories'
+        required: true
+        type: string
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyGithub pandas openpyxl pytz tqdm
+        
+    - name: Run search script
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        ORG_NAME: ${{ github.event.inputs.org_name }}
+        SEARCH_STRING: ${{ github.event.inputs.search_string }}
+      run: python search_repos.py
+      
+    - name: Upload output files
+      uses: actions/upload-artifact@v4
+      with:
+        name: output-excel-${{ github.run_id }}
+        path: ${{ github.workspace }}/Outputs/Extras/Data_collected.xlsx
