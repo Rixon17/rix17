@@ -146,7 +146,12 @@ def save_to_excel(data, metadata, file_path):
         metadata_df.to_excel(writer, sheet_name='Metadata', index=False)
         
         # Results sheet
-        results_df = pd.DataFrame(data, columns=["Org", "Repo", "Branch", "File", "Link"])
+        if data:  # Check if we have any results
+            results_df = pd.DataFrame(data, columns=["Org", "Repo", "Branch", "File", "Link"])
+        else:
+            # Create empty DataFrame with columns if no results
+            results_df = pd.DataFrame(columns=["Org", "Repo", "Branch", "File", "Link"])
+            
         results_df.to_excel(writer, sheet_name="Results", index=False)
         
         # Style both sheets
@@ -207,8 +212,8 @@ def main():
         "Worker Count": MAX_WORKERS
     }
     
-    logger.info(f"Started search at: {metadata['Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted)']}")
-    logger.info(f"User: {metadata['Current User's Login']}")
+    logger.info(f"Started search at: {current_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info(f"User: {current_user}")
     logger.info(f"Organization: {ORG_NAME}")
     logger.info(f"Search String: {SEARCH_STRING}")
     
@@ -216,6 +221,8 @@ def main():
     org = gh.get_organization(ORG_NAME)
     repos = list(org.get_repos())
     total_repos = len(repos)
+    
+    logger.info(f"Found {total_repos} repositories to process")
     
     all_results = []
     
@@ -228,6 +235,8 @@ def main():
                 results = future.result()
                 all_results.extend(results)
                 pbar.update(1)
+    
+    logger.info(f"Search completed. Found {len(all_results)} matches across {total_repos} repositories")
     
     # Save results
     save_to_excel(all_results, metadata, output_file_path)
