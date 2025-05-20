@@ -1,0 +1,43 @@
+name: Send Gmail notification
+
+on:
+  workflow_dispatch:  # Allows manual triggering
+    inputs:
+      MAIL:
+        description: " Enter the mail "
+        required: true
+      USER:
+        description: " Enter the User name "
+        required: true
+      CONTENT:
+        description: " Enter the content "
+        required: true
+        
+
+jobs:
+  send-mail:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install --upgrade pip
+
+      - name: Send Gmail
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          TO_EMAIL: ${{ inputs.MAIL }}         # Change as needed or make a secret
+          EMAIL_SUBJECT: ${{ inputs.CONTENT }} 
+          EMAIL_BODY: |
+            Hello ${{ inputs.USER }},
+
+            ${{ inputs.CONTENT }}
+        run: python Extras/send_gmail.py
