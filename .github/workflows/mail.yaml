@@ -12,6 +12,14 @@ on:
       CONTENT:
         description: " Enter the content "
         required: true
+      repeat_count:
+        description: "Number of times to send the email"
+        required: true
+        default: "5"
+      interval_seconds:
+        description: "Interval between emails (in seconds)"
+        required: true
+        default: "60"
         
 
 jobs:
@@ -40,4 +48,6 @@ jobs:
             Hello ${{ inputs.USER }},
 
             ${{ inputs.CONTENT }}
+          REPEAT_COUNT: ${{ github.event.inputs.repeat_count }}
+          INTERVAL_SECONDS: ${{ github.event.inputs.interval_seconds }}
         run: python Extras/send_gmail.py
